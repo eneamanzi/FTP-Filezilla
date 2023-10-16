@@ -1,0 +1,10 @@
+[user] : AUTH
+[user] : AUTH
+[user] : USER
+[user] : PASS
+[user] : SYST
+[user] : FEAT
+[user] : PWD
+[user] : TYPE
+[user] : PASV
+[user] : PORT
