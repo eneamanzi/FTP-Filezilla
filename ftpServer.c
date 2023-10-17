@@ -399,7 +399,6 @@ int handle_MKD_Command(int client_socket, char *bufferIn, Session *state) {
 
 //TUTTO OK --> parametro: nome file
 int handle_STOR_Command(int client_socket, char *bufferIn, Session *state) {
-  printf("Upload Command\n");
   char fileName[BUFFER_SIZE];
   char filePath[BUFFER_SIZE];
   const char *response;
@@ -410,7 +409,7 @@ int handle_STOR_Command(int client_socket, char *bufferIn, Session *state) {
   strncpy(fileName, bufferIn + 4, strlen(bufferIn + 4));
   sprintf(filePath, "%s%s%s", state->current_working_dir, "/", fileName);
   removeSpaces(filePath);
-  printf("\tFilePath:%s\n", filePath);
+  printf("\t%s\n", filePath);
 
   FILE *fp = fopen(filePath, "wb");
   if (fp == NULL) {
@@ -439,16 +438,15 @@ int handle_DELE_Command(int client_socket, char *bufferIn, Session *state) {
     *cr = '\0';
   sprintf(finalFile, "%s%s%s", state->current_working_dir, "/", fileToDelete);
   removeSpaces(finalFile);
-  printf("File to Delete %s\n", finalFile);
+  printf("\t%s\n", finalFile);
   int res = remove(finalFile);
-  printf("Result %d\n", res);
+  printf("\tResult: %d\n", res);
   sprintf(bufferIn, "250 File deleted successfully.\r\n");
   send(client_socket, bufferIn, strlen(bufferIn), 0);
 }
 
 
 int handle_RETR_Command(int client_socket, char *bufferIn, Session *state) {
-  printf("\tDownload Command\n");
   //prendo il nome el file da buffer e setto variabili di utilizzo
   char fileName[BUFFER_SIZE];
   char filePath[BUFFER_SIZE];
@@ -461,32 +459,34 @@ int handle_RETR_Command(int client_socket, char *bufferIn, Session *state) {
   FILE *fp = fopen(filePath, "rb");
   if (fp == NULL)
     perror("Fopen");
-  printf("\tFilePath:%s\n", filePath);
+  printf("\t%s\n", filePath);
 
   // Read and send file data
   char fileBuffer[BUFFER_SIZE];
   size_t bytes_read;
   while ((bytes_read = fread(fileBuffer, 1, BUFFER_SIZE, fp)) > 0) {
     int sended = send(state->data_socket, fileBuffer, bytes_read, 0);
-    printf("Bytes to read %d\n", sended);
+    printf("\tBytes to read %d\n", sended);
   }
   fclose(fp);
   
   const char *response = "226 Transfer complete.\r\n";
   send(client_socket, response, strlen(response), 0);
-  printf("Upload Finished\n");
+  printf("\tUpload Finished\n");
   close(state->data_socket);
 }
 
 int handle_TYPE_Command(int client_socket, char *bufferIn, Session *state) {
   char type;
   sscanf(bufferIn, "TYPE %c", &type);
-  if (type == 'I') {
+
+  //TODO
+  //if (type == 'I') {
+  if(1){
     snprintf(bufferIn, BUFFER_SIZE, "200 Type set to I.\r\n");
     send(client_socket, bufferIn, strlen(bufferIn), 0);
   } else {
-    snprintf(bufferIn, BUFFER_SIZE,
-             "504 Command not implemented for that parameter.\r\n");
+    snprintf(bufferIn, BUFFER_SIZE, "504 Command not implemented for that parameter.\r\n");
     send(client_socket, bufferIn, strlen(bufferIn), 0);
   }
 }
@@ -494,8 +494,7 @@ int handle_TYPE_Command(int client_socket, char *bufferIn, Session *state) {
 int handle_PORT_Command(int client_socket, char *bufferIn, Session *state) {
   char ip[4];
   unsigned char p1, p2;
-  sscanf(bufferIn, "PORT %hhu,%hhu,%hhu,%hhu,%hhu,%hhu", &ip[0], &ip[1], &ip[2],
-         &ip[3], &p1, &p2);
+  sscanf(bufferIn, "PORT %hhu,%hhu,%hhu,%hhu,%hhu,%hhu", &ip[0], &ip[1], &ip[2],&ip[3], &p1, &p2);
   int data_port = p1 * 256 + p2;
   state->data_socket = create_data_connection(ip, data_port);
   if (state->data_socket < 0) {
