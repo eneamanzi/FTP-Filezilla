@@ -266,7 +266,7 @@ int handle_USER_Command(int client_socket, char *bufferIn, Session *state) {
     send(client_socket, response, strlen(response), 0);
     return -1;
   }
-  snprintf(response, strlen("331 User name okay, need password.\r\n"), "331 User name okay, need password.\r\n");
+  snprintf(response, strlen("331 User name okay, need password.\r\n")+1, "331 User name okay, need password.\r\n");
   send(client_socket, response, strlen(response), 0);
   return 0;
 }
@@ -346,7 +346,7 @@ int handle_PWD_Command(int client_socket, char *bufferIn, Session *state) {
 
 //TUTTO OK
 int handle_CWD_Command(int client_socket, char *bufferIn, Session *state) {
-  char tmpBuffer[BUFFER_SIZE];
+  char tmpBuffer[BUFFER_SIZE*2];  //*2 preventivo --> risolve un warning sulla dimensione
   char tmp[BUFFER_SIZE];
   memset(tmpBuffer, 0, BUFFER_SIZE);
   memset(state->current_working_dir, 0, sizeof(state->current_working_dir));
@@ -369,7 +369,7 @@ int handle_CWD_Command(int client_socket, char *bufferIn, Session *state) {
 //TUTTO OK --> parametro: nome cartella
 int handle_RMD_Command(int client_socket, char *bufferIn, Session *state) {
   char directoryName[BUFFER_SIZE];  
-  char directoryPath[BUFFER_SIZE];
+  char directoryPath[BUFFER_SIZE*2];  //*2 preventivo --> risolve un warning sulla dimensione
   char *response;
   memset(directoryName, 0, sizeof(directoryName));
   memset(directoryPath, 0, sizeof(directoryPath));
@@ -386,7 +386,7 @@ int handle_RMD_Command(int client_socket, char *bufferIn, Session *state) {
 
 //TUTTO OK --> parametro: nome cartella
 int handle_MKD_Command(int client_socket, char *bufferIn, Session *state) {
-  char finalDir[BUFFER_SIZE];
+  char finalDir[BUFFER_SIZE*2]; //*2 preventivo --> risolve un warning sulla dimensione
   char *response = "550 Failed to create directory.\r\n";
   sprintf(finalDir, "%s%s%s", state->current_working_dir, "/", bufferIn + 4);
   removeSpaces(finalDir);
@@ -400,7 +400,7 @@ int handle_MKD_Command(int client_socket, char *bufferIn, Session *state) {
 //TUTTO OK --> parametro: nome file
 int handle_STOR_Command(int client_socket, char *bufferIn, Session *state) {
   char fileName[BUFFER_SIZE];
-  char filePath[BUFFER_SIZE];
+  char filePath[BUFFER_SIZE*2]; //*2 preventivo --> risolve un warning sulla dimensione
   const char *response;
   int read_bytes;
   memset(fileName, 0, BUFFER_SIZE);
@@ -430,7 +430,7 @@ int handle_STOR_Command(int client_socket, char *bufferIn, Session *state) {
 //TUTTO SEMIOK --> parametro: nome file --> toglie spazi
 int handle_DELE_Command(int client_socket, char *bufferIn, Session *state) {
   char fileToDelete[BUFFER_SIZE];
-  char finalFile[BUFFER_SIZE];
+  char finalFile[BUFFER_SIZE*2];  ///*2 preventivo --> risolve un warning sulla dimensione
   strncpy(fileToDelete, bufferIn + 4, strlen(bufferIn + 4));
 
   char *cr = strchr(fileToDelete, '\r');
@@ -449,7 +449,7 @@ int handle_DELE_Command(int client_socket, char *bufferIn, Session *state) {
 int handle_RETR_Command(int client_socket, char *bufferIn, Session *state) {
   //prendo il nome el file da buffer e setto variabili di utilizzo
   char fileName[BUFFER_SIZE];
-  char filePath[BUFFER_SIZE];
+  char filePath[BUFFER_SIZE*2];   ///*2 preventivo --> risolve un warning sulla dimensione
   memset(fileName, 0, BUFFER_SIZE);
   memset(filePath, 0, BUFFER_SIZE);
   strncpy(fileName, bufferIn + 4, strlen(bufferIn + 4));
