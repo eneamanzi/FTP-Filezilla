@@ -308,7 +308,7 @@ int handle_LIST_Command(int client_socket, char *bufferIn, Session *state) {
       struct stat file_stat;
       char filepath[BUFFER_SIZE];
 
-      snprintf(filepath, BUFFER_SIZE, "%s/%s", state->current_working_dir,entry->d_name); //????????????????????????????????
+      snprintf(filepath, BUFFER_SIZE*2, "%s/%s", state->current_working_dir,entry->d_name); //????????????????????????????????
       if (stat(filepath, &file_stat) == 0) {
         char file_mode[11];
         file_mode_string(file_stat.st_mode, file_mode);
@@ -339,7 +339,7 @@ int handle_PWD_Command(int client_socket, char *bufferIn, Session *state) {
   getcwd(cwd, sizeof(cwd));
   strcpy(state->current_working_dir, cwd);
   printf("\t%s\n", state->current_working_dir);
-  snprintf(bufferIn, BUFFER_SIZE, "257 \"%s\" is the current directory.\r\n",cwd);
+  snprintf(bufferIn, BUFFER_SIZE*2, "257 \"%s\" is the current directory.\r\n",cwd);
   send(client_socket, bufferIn, strlen(bufferIn), 0);
   return 0;
 }
@@ -362,7 +362,7 @@ int handle_CWD_Command(int client_socket, char *bufferIn, Session *state) {
   if (chdir(state->current_working_dir) == -1)
     perror("chdir");
   printf("\t%s\n", state->current_working_dir);
-  snprintf(tmpBuffer, BUFFER_SIZE, "250 Directory successfully changed to %s.\r\n", state->current_working_dir);
+  snprintf(tmpBuffer, BUFFER_SIZE*2, "250 Directory successfully changed to %s.\r\n", state->current_working_dir);
   send(client_socket, tmpBuffer, strlen(tmpBuffer), 0);
 }
 
