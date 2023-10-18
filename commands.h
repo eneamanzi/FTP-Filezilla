@@ -15,6 +15,9 @@ typedef enum
 }Commands;
 extern const char* mCmd[NUMBER_OF_COMMANDS];
 
+
+
+
 typedef struct 
 {
     char  username[256];

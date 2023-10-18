@@ -1,0 +1,13 @@
+{
+    "makefile.launchConfigurations": [
+        {
+            "cwd": "/home/enea/Scrivania/FTP-Filezilla",
+            "binaryPath": "/home/enea/Scrivania/FTP-Filezilla/serverFTP",
+            "binaryArgs": []
+        }
+    ],
+    "files.associations": {
+        "inet.h": "c",
+        "commands.h": "c"
+    }
+}
