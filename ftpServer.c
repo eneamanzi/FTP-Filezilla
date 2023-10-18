@@ -1,5 +1,4 @@
 #include "colors.h"
-#include "commands.h"
 #include <arpa/inet.h>
 #include <ctype.h>
 #include <dirent.h>

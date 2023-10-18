@@ -1,7 +1,7 @@
 CC=gcc
 CFLAGS=-c -Wall
 LDFLAGS=-lm
-SOURCES=ftpServer.c commands.c
+SOURCES=ftpServer.c myLib.c
 OBJECTS=$(SOURCES:.c=.o)		#sostituisce i file .c con file .o
 EXECUTABLE=serverFTP
 DEPS=commands.h

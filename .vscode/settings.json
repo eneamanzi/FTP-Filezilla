@@ -8,6 +8,8 @@
     ],
     "files.associations": {
         "inet.h": "c",
-        "commands.h": "c"
+        "commands.h": "c",
+        "stdio.h": "c",
+        "stdlib.h": "c"
     }
 }
