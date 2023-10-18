@@ -17,6 +17,9 @@
 #include <semaphore.h>
 #include <signal.h> 
 
+#include "myLib.h"
+
+
 int handle_USER_Command(int client_socket, char *bufferIn, Session *state);
 int handle_PASS_Command(int client_socket, char *bufferIn, Session *state);
 int handle_LIST_Command(int client_socket, char *bufferIn, Session *state);
@@ -39,6 +42,9 @@ struct COMMANDS mComands[] = {
     {"STOR", handle_STOR_Command}, {"MKD", handle_MKD_Command},
     {"RMD", handle_RMD_Command},   {"TYPE", handle_TYPE_Command}};
 
+
+
+
 pthread_mutex_t mutex;
 #define BUFFER_SIZE 2048
 int port = 0;
@@ -56,6 +62,7 @@ char logBuffer[BUFFER_SIZE][BUFFER_SIZE];
 void *handle_client(void *client_fdIn);
 void *log_Message();
 int create_data_connection(unsigned char ip[4], int port);
+
 void file_mode_string(mode_t mode, char *str) {
   static const char *rwx[] = {"---", "--x", "-w-", "-wx", "r--", "r-x", "rw-", "rwx"};
 
@@ -88,7 +95,8 @@ void removeSpaces(char *str) {
 //Creazione server e creazione thread per ogni client
 int main(int argc, char *argv[]) {
   pthread_mutex_init(&mutex, NULL);
-  int server_fd, client_fd;
+  int server_fd;
+  long client_fd;   //creato come long perchè sizeof(long)=sizeof(void *)
   struct sockaddr_in server_addr, client_addr;
   if (argc != 2) {
     printf("Please enter Port number\n");
@@ -188,7 +196,7 @@ void *log_Message()
       }
       for(int i =0; i < countCommands;++i)
       {
-        int ret = fprintf(fp, "[%s] : %s\n",logs.state->username ,logs.command[i]);
+        fprintf(fp, "[%s] : %s\n",logs.state->username ,logs.command[i]);
         fflush(fp);
       }
       countCommands = 0;
@@ -199,13 +207,11 @@ void *log_Message()
 
 //Funzione di gestione per ogni thread generato -_> si occupa di invocare le funzioni per i rispettivi comandi
 void *handle_client(void *client_fdIn) {
-  int client_fd = (int)client_fdIn;
+  int client_fd = (long)client_fdIn;
   printf("Client File Descriptor %d \n", client_fd);
   char buffer[BUFFER_SIZE];
   memset(buffer, 0, sizeof(buffer));
   int read_bytes;
-  int logged_in = 0;
-  int data_socket;
   char mCwd[BUFFER_SIZE];
   getcwd(mCwd, sizeof(mCwd)); //funzione C per directory corrente
 
@@ -214,7 +220,6 @@ void *handle_client(void *client_fdIn) {
   send(client_fd, buffer, strlen(buffer), 0);
   memset(&logs,0,sizeof(logs));
   Session state;
-  int i=1;
   memset(&state, 0, sizeof(Session));
   while ((read_bytes = recv(client_fd, buffer, BUFFER_SIZE, 0)) > 0) {
     // Ensure the buffer is null-terminated
@@ -249,6 +254,7 @@ void *handle_client(void *client_fdIn) {
       send(client_fd, buffer, strlen(buffer), 0);
     }
   }
+  return 0;
 }
 
 //DA QUI INIZIANO LE IMPLEMENTAZIONI DELLE SINGOLE FUNZIONI //
@@ -299,6 +305,7 @@ int handle_LIST_Command(int client_socket, char *bufferIn, Session *state) {
     snprintf(bufferIn, BUFFER_SIZE, "550 Failed to open directory.\r\n");
     send(client_socket, bufferIn, strlen(bufferIn), 0);
     close(state->data_socket);
+    return -1;
   //funzionamento
   } else {
     snprintf(bufferIn, BUFFER_SIZE, "150 Opening ASCII mode data connection for file list.\r\n");
@@ -330,6 +337,7 @@ int handle_LIST_Command(int client_socket, char *bufferIn, Session *state) {
     send(client_socket, bufferIn, strlen(bufferIn), 0);
     closedir(dir);
     close(state->data_socket);
+    return 0;
   }
 }
 
@@ -347,7 +355,6 @@ int handle_PWD_Command(int client_socket, char *bufferIn, Session *state) {
 //TUTTO OK
 int handle_CWD_Command(int client_socket, char *bufferIn, Session *state) {
   char tmpBuffer[BUFFER_SIZE*2];  //*2 preventivo --> risolve un warning sulla dimensione
-  char tmp[BUFFER_SIZE];
   memset(tmpBuffer, 0, BUFFER_SIZE);
   memset(state->current_working_dir, 0, sizeof(state->current_working_dir));
 
@@ -364,6 +371,7 @@ int handle_CWD_Command(int client_socket, char *bufferIn, Session *state) {
   printf("\t%s\n", state->current_working_dir);
   snprintf(tmpBuffer, BUFFER_SIZE*2, "250 Directory successfully changed to %s.\r\n", state->current_working_dir);
   send(client_socket, tmpBuffer, strlen(tmpBuffer), 0);
+  return 0;
 }
 
 //TUTTO OK --> parametro: nome cartella
@@ -377,11 +385,15 @@ int handle_RMD_Command(int client_socket, char *bufferIn, Session *state) {
   memcpy(directoryName, bufferIn + 4, strlen(bufferIn + 4));
   sprintf(directoryPath, "%s%s%s", state->current_working_dir, "/",directoryName);
   removeSpaces(directoryPath);
-  if (rmdir(directoryPath) == 0)
+  if (rmdir(directoryPath) == 0){
     response = "250 Directory removed successfully.\r\n";
-  else
+    send(client_socket, response, strlen(response), 0);
+    return 0;
+  }else{
     response = "550 Failed to remove directory.\r\n";
-  send(client_socket, response, strlen(response), 0);
+    send(client_socket, response, strlen(response), 0);
+    return -1;
+  }
 }
 
 //TUTTO OK --> parametro: nome cartella
@@ -390,11 +402,16 @@ int handle_MKD_Command(int client_socket, char *bufferIn, Session *state) {
   char *response = "550 Failed to create directory.\r\n";
   sprintf(finalDir, "%s%s%s", state->current_working_dir, "/", bufferIn + 4);
   removeSpaces(finalDir);
-  if (mkdir(finalDir, 0777) == 0)
+  if (mkdir(finalDir, 0777) == 0){
     response = "250 Directory created successfully.\r\n";
-  else
+    send(client_socket, response, strlen(response), 0);
+    return 0;
+  }else{
     response = "550 Failed to create directory.\r\n";
-  send(client_socket, response, strlen(response), 0);
+    send(client_socket, response, strlen(response), 0);
+    return -1;
+  }
+    
 }
 
 //TUTTO OK --> parametro: nome file
@@ -425,6 +442,7 @@ int handle_STOR_Command(int client_socket, char *bufferIn, Session *state) {
   fclose(fp);
   send(client_socket, response, strlen(response), 0);
   close(state->data_socket);
+  return 0;
 }
 
 //TUTTO SEMIOK --> parametro: nome file --> toglie spazi
@@ -443,6 +461,7 @@ int handle_DELE_Command(int client_socket, char *bufferIn, Session *state) {
   printf("\tResult: %d\n", res);
   sprintf(bufferIn, "250 File deleted successfully.\r\n");
   send(client_socket, bufferIn, strlen(bufferIn), 0);
+  return 0;
 }
 
 
@@ -474,10 +493,12 @@ int handle_RETR_Command(int client_socket, char *bufferIn, Session *state) {
   send(client_socket, response, strlen(response), 0);
   printf("\tUpload Finished\n");
   close(state->data_socket);
+  return 0;
 }
 
 int handle_TYPE_Command(int client_socket, char *bufferIn, Session *state) {
   char type;
+  
   sscanf(bufferIn, "TYPE %c", &type);
 
   //TODO
@@ -485,9 +506,11 @@ int handle_TYPE_Command(int client_socket, char *bufferIn, Session *state) {
   if(1){
     snprintf(bufferIn, BUFFER_SIZE, "200 Type set to I.\r\n");
     send(client_socket, bufferIn, strlen(bufferIn), 0);
+    return 0;
   } else {
     snprintf(bufferIn, BUFFER_SIZE, "504 Command not implemented for that parameter.\r\n");
     send(client_socket, bufferIn, strlen(bufferIn), 0);
+    return -1;
   }
 }
 
@@ -496,7 +519,7 @@ int handle_PORT_Command(int client_socket, char *bufferIn, Session *state) {
   unsigned char p1, p2;
   sscanf(bufferIn, "PORT %hhu,%hhu,%hhu,%hhu,%hhu,%hhu", &ip[0], &ip[1], &ip[2],&ip[3], &p1, &p2);
   int data_port = p1 * 256 + p2;
-  state->data_socket = create_data_connection(ip, data_port);
+  state->data_socket = create_data_connection((unsigned char*) ip, data_port);
   if (state->data_socket < 0) {
     snprintf(bufferIn, BUFFER_SIZE, "425 Can't open data connection.\r\n");
     send(client_socket, bufferIn, strlen(bufferIn), 0);
