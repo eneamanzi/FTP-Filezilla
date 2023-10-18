@@ -4,7 +4,7 @@ LDFLAGS=-lm
 SOURCES=ftpServer.c myLib.c handlers.c
 OBJECTS=$(SOURCES:.c=.o)		#sostituisce i file .c con file .o
 EXECUTABLE=serverFTP
-DEPS=commands.h
+DEPS=myLib.h handlers.h
 
 #penso linking
 $(EXECUTABLE): $(OBJECTS) 			#prende ftpServer.o e commands.o		
