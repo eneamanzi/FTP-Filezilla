@@ -4,8 +4,7 @@
 #include <sys/socket.h>
 #include <pthread.h>
 
-#include <arpa/inet.h>
-#include <netinet/in.h>
+
 #include <semaphore.h>
 
 //da usare
@@ -22,7 +21,8 @@ COMMANDS mComands[] = {
     {"PWD", handle_PWD_Command,},   {"CWD", handle_CWD_Command},
     {"DELE", handle_DELE_Command}, {"RETR", handle_RETR_Command},
     {"STOR", handle_STOR_Command}, {"MKD", handle_MKD_Command},
-    {"RMD", handle_RMD_Command},   {"TYPE", handle_TYPE_Command}};
+    {"RMD", handle_RMD_Command},   {"TYPE", handle_TYPE_Command},
+    {"PASV", handle_PASV_Command}};
 
 pthread_mutex_t mutex;
 
@@ -46,6 +46,7 @@ void *log_Message();
 int main(int argc, char *argv[]) {
   pthread_mutex_init(&mutex, NULL);
   int server_fd;
+  int enableOpt =1;
   long client_fd;   //creato come long perchè sizeof(long)=sizeof(void *)
   struct sockaddr_in server_addr, client_addr;
   if (argc != 2) {
@@ -64,9 +65,11 @@ int main(int argc, char *argv[]) {
   server_addr.sin_addr.s_addr = INADDR_ANY;
   server_addr.sin_port = htons(port);
 
+  /* Address can be reused instantly after program exits */
+  setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR, &enableOpt, sizeof(enableOpt));
+
   // Bind the socket
-  if (bind(server_fd, (struct sockaddr *)&server_addr, sizeof(server_addr)) <
-      0) {
+  if (bind(server_fd, (struct sockaddr *)&server_addr, sizeof(server_addr)) < 0) {
     perror("bind");
     exit(EXIT_FAILURE);
   }
@@ -105,8 +108,9 @@ int main(int argc, char *argv[]) {
 
 int isValidCommand(char *commandIn) {
   for (int i = 0; i < NUMBER_OF_COMMANDS; i++)
-    if (strncmp(commandIn, mCmd[i], strlen(mCmd[i])) == 0)
+    if (strcasecmp(commandIn, mCmd[i]) == 0){
       return 1;
+    }
   return -1;
 }
 
@@ -173,11 +177,15 @@ void *handle_client(void *client_fdIn) {
   memset(&state, 0, sizeof(Session));
   while ((read_bytes = recv(client_fd, buffer, BUFFER_SIZE, 0)) > 0) {
     // Ensure the buffer is null-terminated
+    printf("%d", read_bytes);
     buffer[read_bytes] = '\0';
     char cmd[5];
+    cmd[4]='\0';
 
     //TODO modificare i caratteri sono più di 4
     sscanf(buffer, "%4s", cmd);
+    printf("(%s)", cmd);
+    
     pthread_mutex_lock(&mutex);
     while(countCommands >= 10)
     {
@@ -190,16 +198,18 @@ void *handle_client(void *client_fdIn) {
     pthread_mutex_unlock(&mutex);
     if(countCommands == 10)pthread_cond_signal(&cond_full);
     
+//TODO controllo isValid command e stampare comandi in input (riga 183) --> a noi manca SYST
     if (isValidCommand(cmd) != -1) {                //fa controllo nell'array di comandi
+      //printf("(passato valid command %s %ld)\n", cmd, strlen(cmd));
       for (int i = 0; i < 12; ++i) {
-        if (strcmp(cmd, mComands[i].name) == 0) {     //cerca se il comando inviato dall'utente corrisponde a uno presente
-          //strncpy(state->username, buffer + 4, strlen(buffer + 4));
+        if (strcasecmp(cmd, mComands[i].name) == 0) {     //cerca se il comando inviato dall'utente corrisponde a uno presente
           printf("%s", buffer);
           mComands[i].commandFunc(client_fd, buffer, &state);   //commandFunc è elemento della struct definito come puntatore a funzione di tipo Int che accetta 3 parametri--> con questa sintassi invoco quella funzione di gestione
           break;
         }
       }
     } else {
+      printf("(fallito valid command %s %ld)\n", cmd, strlen(cmd));
       snprintf(buffer, BUFFER_SIZE, "500 Unknown command.\r\n");
       send(client_fd, buffer, strlen(buffer), 0);
     }

@@ -6,13 +6,18 @@
 #include <sys/stat.h>
 #include <pwd.h>
 #include <string.h>
+//librerie per socket
 #include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+//
 #include <time.h>
 #include <unistd.h> //funzioni linux sistema
 #include <ctype.h> // verifica dei tipi --> isspace
 
 int handle_USER_Command(int client_socket, char *bufferIn, Session *state);
 int handle_PASS_Command(int client_socket, char *bufferIn, Session *state);
+int handle_PASV_Command(int client_socket, char *bufferIn, Session *state);
 int handle_LIST_Command(int client_socket, char *bufferIn, Session *state);
 int handle_PWD_Command(int client_socket, char *bufferIn, Session *state);
 int handle_CWD_Command(int client_socket, char *bufferIn, Session *state);
