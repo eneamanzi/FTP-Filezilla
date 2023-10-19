@@ -68,6 +68,94 @@ int handle_PASS_Command(int client_socket, char *bufferIn, Session *state) {
 }
 
 //TUTTO OK
+int handle_PORT_Command(int client_socket, char *bufferIn, Session *state) {
+  char ip[4];
+  unsigned char p1, p2;
+  sscanf(bufferIn, "PORT %hhu,%hhu,%hhu,%hhu,%hhu,%hhu", &ip[0], &ip[1], &ip[2],&ip[3], &p1, &p2);
+  int data_port = p1 * 256 + p2;
+  
+  state->data_socket = create_data_connection((unsigned char*) ip, data_port);
+  if (state->data_socket < 0) {
+    snprintf(bufferIn, BUFFER_SIZE, "425 Can't open data connection.\r\n");
+    send(client_socket, bufferIn, strlen(bufferIn), 0);
+  } else {
+    snprintf(bufferIn, BUFFER_SIZE, "200 PORT command successful.\r\n");
+    send(client_socket, bufferIn, strlen(bufferIn), 0);
+  }
+  return state->data_socket;
+}
+
+int create_socket(int port){
+  int sock;
+  int reuse = 1;
+
+  if((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0){
+    fprintf(stderr, "Cannot open socket");
+    exit(EXIT_FAILURE);
+  }
+
+  /* Server addess */
+  struct sockaddr_in address;
+  address.sin_family = AF_INET;
+  address.sin_addr.s_addr = INADDR_ANY;
+  address.sin_port = htons(port);
+
+  /* Address can be reused instantly after program exits */
+  setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &reuse, sizeof reuse);
+
+  /* Bind socket to server address */
+  if(bind(sock,(struct sockaddr*) &address, sizeof(address)) < 0){
+    fprintf(stderr, "Cannot bind socket to address");
+    exit(EXIT_FAILURE);
+  }
+
+  listen(sock,5);
+  return sock;
+}
+
+//
+int handle_PASV_Command(int client_socket, char *bufferIn, Session *state) {
+  printf("dentro pasv");
+  //if(state->logged_in){
+  int ip[4];
+  int portPart[2];
+  int port;
+  char buff[255];
+  char *response = "227 Entering Passive Mode (%d,%d,%d,%d,%d,%d)\n";
+  
+  srand(time(NULL));
+  portPart[1] = 128 * (rand()%64);
+  portPart[2] = (rand()%255);
+  port = portPart[1]*256 + portPart[2];
+
+  /* Close previous passive socket */
+  close(state->data_socket);
+
+  /* Start listening here, but don't accept the connection */
+  state->data_socket = create_socket(port);
+
+  printf("port: %d\n",port);
+
+  //prendo IP dalla socket client
+  socklen_t addr_size = sizeof(struct sockaddr_in);
+  struct sockaddr_in addr;
+  getsockname(client_socket, (struct sockaddr *)&addr, &addr_size);   //salvo indirizzo formattato dentro addr
+  char* host = inet_ntoa(addr.sin_addr);
+  sscanf(host,"%d.%d.%d.%d",&ip[0],&ip[1],&ip[2],&ip[3]);
+  
+  //filla il messaggio definito in response e lo mette dentro buff
+  sprintf(buff,response,ip[0],ip[1],ip[2],ip[3],portPart[1],portPart[2]);
+
+  send(client_socket, buff, strlen(buff), 0);
+
+  /*}else{
+    state->message = "530 Please login with USER and PASS.\n";
+    printf("%s",state->message);
+  }*/
+  return 0;
+}
+
+//TUTTO OK
 int handle_LIST_Command(int client_socket, char *bufferIn, Session *state) {
   DIR *dir;
   struct dirent *entry;
@@ -286,20 +374,4 @@ int handle_TYPE_Command(int client_socket, char *bufferIn, Session *state) {
     send(client_socket, bufferIn, strlen(bufferIn), 0);
     return -1;
   }
-}
-
-int handle_PORT_Command(int client_socket, char *bufferIn, Session *state) {
-  char ip[4];
-  unsigned char p1, p2;
-  sscanf(bufferIn, "PORT %hhu,%hhu,%hhu,%hhu,%hhu,%hhu", &ip[0], &ip[1], &ip[2],&ip[3], &p1, &p2);
-  int data_port = p1 * 256 + p2;
-  state->data_socket = create_data_connection((unsigned char*) ip, data_port);
-  if (state->data_socket < 0) {
-    snprintf(bufferIn, BUFFER_SIZE, "425 Can't open data connection.\r\n");
-    send(client_socket, bufferIn, strlen(bufferIn), 0);
-  } else {
-    snprintf(bufferIn, BUFFER_SIZE, "200 PORT command successful.\r\n");
-    send(client_socket, bufferIn, strlen(bufferIn), 0);
-  }
-  return state->data_socket;
 }
