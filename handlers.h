@@ -28,8 +28,6 @@ int handle_MKD_Command(int client_socket, char *bufferIn, Session *state);
 int handle_RMD_Command(int client_socket, char *bufferIn, Session *state);
 int handle_TYPE_Command(int client_socket, char *bufferIn, Session *state);
 int handle_QUIT_Command(int client_socket, char *bufferIn, Session *state);
-
-
 int handle_PASV_Command(int client_socket, char *bufferIn, Session *state);
 
 
