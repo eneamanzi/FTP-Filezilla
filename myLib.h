@@ -1,6 +1,6 @@
 #ifndef COMMANDS_H
 #define COMMANDS_H
-#define NUMBER_OF_COMMANDS 13
+#define NUMBER_OF_COMMANDS 14
 #define BUFFER_SIZE 2048
 
 typedef enum 
