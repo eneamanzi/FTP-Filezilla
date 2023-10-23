@@ -22,8 +22,7 @@ COMMANDS mComands[] = {
     {"DELE", handle_DELE_Command}, {"RETR", handle_RETR_Command},
     {"STOR", handle_STOR_Command}, {"MKD", handle_MKD_Command},
     {"RMD", handle_RMD_Command},   {"TYPE", handle_TYPE_Command},
-    {"QUIT", handle_QUIT_Command},
-    //{"PASV", handle_PASV_Command}
+    {"QUIT", handle_QUIT_Command}, {"PASV", handle_PASV_Command}
     };
 
 pthread_mutex_t mutex;
@@ -109,34 +108,7 @@ int main(int argc, char *argv[]) {
   return 0;
 }
 
-int isValidCommand(char *commandIn) {
-  for (int i = 0; i < NUMBER_OF_COMMANDS; i++)
-    if (strcasecmp(commandIn, mCmd[i]) == 0){
-      return 1;
-    }
-  return -1;
-}
 
-int create_data_connection(unsigned char ip[4], int port) {
-  int data_socket = socket(AF_INET, SOCK_STREAM, 0);
-  if (data_socket < 0) {
-    perror("socket");
-    return -1;
-  }
-
-  struct sockaddr_in client_addr;
-  client_addr.sin_family = AF_INET;
-  client_addr.sin_port = htons(port);
-  client_addr.sin_addr.s_addr = htonl((ip[0] << 24) | (ip[1] << 16) | (ip[2] << 8) | ip[3]);
-
-  if (connect(data_socket, (struct sockaddr *)&client_addr, sizeof(client_addr)) < 0) {
-    perror("connect");
-    close(data_socket);
-    return -1;
-  }
-
-  return data_socket;
-}
 
 //Funzione Thread di logging --> ogni 10 comandi (gestito da mutex)
 void *log_Message()
@@ -180,14 +152,14 @@ void *handle_client(void *client_fdIn) {
   memset(&state, 0, sizeof(Session));
   while ((read_bytes = recv(client_fd, buffer, BUFFER_SIZE, 0)) > 0) {
     // Ensure the buffer is null-terminated
-    printf("%d", read_bytes);
+    //printf("%d", read_bytes);
     buffer[read_bytes] = '\0';
     char cmd[5];
     cmd[4]='\0';
 
     //TODO modificare i caratteri sono più di 4
     sscanf(buffer, "%4s", cmd);
-    printf("(%s)", cmd);
+    //printf("(%s)", cmd);
     
     pthread_mutex_lock(&mutex);
     while(countCommands >= 10)

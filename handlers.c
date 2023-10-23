@@ -1,5 +1,14 @@
 #include "handlers.h"
 
+int isValidCommand(char *commandIn) {
+  for (int i = 0; i < NUMBER_OF_COMMANDS; i++)
+    if (strcasecmp(commandIn, mCmd[i]) == 0){
+      return 1;
+    }
+  return -1;
+}
+
+
 void file_mode_string(mode_t mode, char *str) {
   static const char *rwx[] = {"---", "--x", "-w-", "-wx", "r--", "r-x", "rw-", "rwx"};
 
@@ -85,7 +94,70 @@ int handle_PORT_Command(int client_socket, char *bufferIn, Session *state) {
   return state->data_socket;
 }
 
-int create_socket(int port){
+int create_data_connection(unsigned char ip[4], int port) {
+  int data_socket = socket(AF_INET, SOCK_STREAM, 0);
+  if (data_socket < 0) {
+    perror("socket");
+    return -1;
+  }
+
+  struct sockaddr_in client_addr;
+  client_addr.sin_family = AF_INET;
+  client_addr.sin_port = htons(port);
+  client_addr.sin_addr.s_addr = htonl((ip[0] << 24) | (ip[1] << 16) | (ip[2] << 8) | ip[3]);
+
+  if (connect(data_socket, (struct sockaddr *)&client_addr, sizeof(client_addr)) < 0) {
+    perror("connect");
+    close(data_socket);
+    return -1;
+  }
+  return data_socket;
+}
+//
+
+//
+int handle_PASV_Command(int client_socket, char *bufferIn, Session *state) {
+  printf("dentro pasv");
+  //if(state->logged_in){
+  int ip[4];
+  int portPart[2];
+  int port;
+  char buff[255];
+  char *response = "227 Entering Passive Mode (%d,%d,%d,%d,%d,%d)\n";
+  
+  srand(time(NULL));
+  portPart[1] = 128 * (rand()%64);
+  portPart[2] = (rand()%255);
+  port = portPart[1]*256 + portPart[2];
+
+  /* Close previous passive socket */
+  close(state->data_socket);
+
+  /* Start listening here, but don't accept the connection */
+  state->data_socket = create_socket_pasv(port);
+
+  printf("port: %d\n",port);
+
+  //prendo IP dalla socket client
+  socklen_t addr_size = sizeof(struct sockaddr_in);
+  struct sockaddr_in addr;
+  getsockname(client_socket, (struct sockaddr *)&addr, &addr_size);   //salvo indirizzo formattato dentro addr
+  char* host = inet_ntoa(addr.sin_addr);
+  sscanf(host,"%d.%d.%d.%d",&ip[0],&ip[1],&ip[2],&ip[3]);
+  
+  //filla il messaggio definito in response e lo mette dentro buff
+  sprintf(buff,response,ip[0],ip[1],ip[2],ip[3],portPart[1],portPart[2]);
+
+  send(client_socket, buff, strlen(buff), 0);
+
+  /*}else{
+    state->message = "530 Please login with USER and PASS.\n";
+    printf("%s",state->message);
+  }*/
+  return 0;
+}
+
+int create_socket_pasv(int port){
   int sock;
   int reuse = 1;
 
@@ -111,48 +183,6 @@ int create_socket(int port){
 
   listen(sock,5);
   return sock;
-}
-
-//
-int handle_PASV_Command(int client_socket, char *bufferIn, Session *state) {
-  printf("dentro pasv");
-  //if(state->logged_in){
-  int ip[4];
-  int portPart[2];
-  int port;
-  char buff[255];
-  char *response = "227 Entering Passive Mode (%d,%d,%d,%d,%d,%d)\n";
-  
-  srand(time(NULL));
-  portPart[1] = 128 * (rand()%64);
-  portPart[2] = (rand()%255);
-  port = portPart[1]*256 + portPart[2];
-
-  /* Close previous passive socket */
-  close(state->data_socket);
-
-  /* Start listening here, but don't accept the connection */
-  state->data_socket = create_socket(port);
-
-  printf("port: %d\n",port);
-
-  //prendo IP dalla socket client
-  socklen_t addr_size = sizeof(struct sockaddr_in);
-  struct sockaddr_in addr;
-  getsockname(client_socket, (struct sockaddr *)&addr, &addr_size);   //salvo indirizzo formattato dentro addr
-  char* host = inet_ntoa(addr.sin_addr);
-  sscanf(host,"%d.%d.%d.%d",&ip[0],&ip[1],&ip[2],&ip[3]);
-  
-  //filla il messaggio definito in response e lo mette dentro buff
-  sprintf(buff,response,ip[0],ip[1],ip[2],ip[3],portPart[1],portPart[2]);
-
-  send(client_socket, buff, strlen(buff), 0);
-
-  /*}else{
-    state->message = "530 Please login with USER and PASS.\n";
-    printf("%s",state->message);
-  }*/
-  return 0;
 }
 
 //TUTTO OK

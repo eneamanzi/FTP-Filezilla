@@ -34,5 +34,9 @@ int handle_PASV_Command(int client_socket, char *bufferIn, Session *state);
 
 
 int create_data_connection(unsigned char ip[4], int port);
+int create_socket_pasv(int port);
+
+
 void file_mode_string(mode_t mode, char *str);
 void removeSpaces(char *str);
+int isValidCommand(char *commandIn);
