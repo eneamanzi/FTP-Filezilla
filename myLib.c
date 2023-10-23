@@ -4,6 +4,7 @@ const char* mCmd[NUMBER_OF_COMMANDS] =
 {
     "USER",
     "PASS",
+    ///"PASV",
     "PWD",
     "CWD",
     "LIST",

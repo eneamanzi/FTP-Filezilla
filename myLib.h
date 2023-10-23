@@ -1,6 +1,8 @@
 #ifndef COMMANDS_H
 #define COMMANDS_H
 #define NUMBER_OF_COMMANDS 14
+#define BUFFER_SIZE 2048
+
 typedef enum 
 {
     PWD=0,
@@ -16,8 +18,6 @@ typedef enum
 extern const char* mCmd[NUMBER_OF_COMMANDS];
 
 
-
-
 typedef struct 
 {
     char  username[256];
@@ -26,10 +26,10 @@ typedef struct
     char current_working_dir[2048];
 }Session;
 
-struct COMMANDS
+typedef struct 
 {
     char *name;
     int (*commandFunc)(int ,char*,Session*);
-};
+}COMMANDS;
 
 #endif
