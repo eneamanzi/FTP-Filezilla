@@ -22,8 +22,8 @@ COMMANDS mComands[] = {
     {"DELE", handle_DELE_Command}, {"RETR", handle_RETR_Command},
     {"STOR", handle_STOR_Command}, {"MKD", handle_MKD_Command},
     {"RMD", handle_RMD_Command},   {"TYPE", handle_TYPE_Command},
+    {"QUIT", handle_QUIT_Command},
     //{"PASV", handle_PASV_Command}
-    //{"QUIT", handle_QUIT_Command}
     };
 
 pthread_mutex_t mutex;
@@ -77,7 +77,7 @@ int main(int argc, char *argv[]) {
   }
 
   // Listen for connections
-  if (listen(server_fd, 1) < 0) {
+  if (listen(server_fd, 5) < 0) {
     perror("listen");
     exit(EXIT_FAILURE);
   }
@@ -87,6 +87,7 @@ int main(int argc, char *argv[]) {
   pthread_cond_init(&cond_empty,NULL);
   pthread_cond_init(&cond_full,NULL);
   pthread_create(&consumer,NULL,log_Message,NULL);
+  
   while (1) {
     // Accept a connection
     printf(YELLOW);
