@@ -119,10 +119,13 @@ int create_data_connection(unsigned char ip[4], int port) {
 int handle_PASV_Command(int client_socket, char *bufferIn, Session *state) {
   //if(state->logged_in){
   int ip[4];
-  int portPart[2];
-  int port;
+  int portPart[2], port;
   char buff[255];
   char *response = "227 Entering Passive Mode (%d,%d,%d,%d,%d,%d)\n";
+
+  struct sockaddr_in client_addr;
+  socklen_t addr_len = sizeof(client_addr);
+  int dataServer;
   
   srand(time(NULL));
   portPart[0] = 128 + (rand()%64);
@@ -133,7 +136,7 @@ int handle_PASV_Command(int client_socket, char *bufferIn, Session *state) {
   close(state->data_socket);
 
   /* Start listening here, but don't accept the connection */
-  state->data_socket = create_socket_pasv(port);
+  dataServer = create_socket_pasv(port);
 
   //prendo IP dalla socket client
   socklen_t addr_size = sizeof(struct sockaddr_in);
@@ -150,16 +153,21 @@ int handle_PASV_Command(int client_socket, char *bufferIn, Session *state) {
 
   send(client_socket, buff, strlen(buff), 0);
 
-  /*}else{
-    state->message = "530 Please login with USER and PASS.\n";
-    printf("%s",state->message);
-  }*/
+  if ((state->data_socket  = accept(dataServer, (struct sockaddr *)&client_addr, &addr_len)) < 0) {
+      perror("error accept");
+      exit(EXIT_FAILURE);
+    }
   return 0;
 }
 
 int create_socket_pasv(int port){
-  int sock;
+  int sock, sockPattona;
   int reuse = 1;
+
+  /*if((sockPattona = socket(AF_INET, SOCK_STREAM, 0)) < 0){
+    fprintf(stderr, "Cannot open socket");
+    exit(EXIT_FAILURE);
+  }*/
 
   if((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0){
     fprintf(stderr, "Cannot open socket");
@@ -177,7 +185,7 @@ int create_socket_pasv(int port){
 
   /* Bind socket to server address */
   if(bind(sock,(struct sockaddr*) &address, sizeof(address)) < 0){
-    fprintf(stderr, "Cannot bind socket to address");
+    fprintf(stderr, "Cannot bind socket to address\n");
     exit(EXIT_FAILURE);
   }
 
@@ -191,6 +199,7 @@ int handle_LIST_Command(int client_socket, char *bufferIn, Session *state) {
   struct dirent *entry;
   char entry_buffer[BUFFER_SIZE];
   dir = opendir(state->current_working_dir);
+  printf("\tdir: %s\n", state->current_working_dir);
   //errore
   if (dir == NULL) {
     perror("opendir");
@@ -217,14 +226,18 @@ int handle_LIST_Command(int client_socket, char *bufferIn, Session *state) {
         char time_buffer[80];
         strftime(time_buffer, sizeof(time_buffer), "%b %d %H:%M",localtime(&(file_stat.st_mtime)));
 
+        
         snprintf(entry_buffer, BUFFER_SIZE, "%s %ld %s %s %lld %s %s\r\n",
                  file_mode, (long)file_stat.st_nlink, user_info->pw_name,
                  group_info->gr_name, (long long)file_stat.st_size, time_buffer,entry->d_name);
-
+        
+        //printf("Socket: %d\n", state->data_socket);
+  
+        //sleep(999999);
         send(state->data_socket, entry_buffer, strlen(entry_buffer), 0);
+    
       }
     }
-
     snprintf(bufferIn, BUFFER_SIZE, "226 Transfer complete.\r\n");
     send(client_socket, bufferIn, strlen(bufferIn), 0);
     closedir(dir);
