@@ -22,7 +22,9 @@ COMMANDS mComands[] = {
     {"DELE", handle_DELE_Command}, {"RETR", handle_RETR_Command},
     {"STOR", handle_STOR_Command}, {"MKD", handle_MKD_Command},
     {"RMD", handle_RMD_Command},   {"TYPE", handle_TYPE_Command},
-    {"PASV", handle_PASV_Command}};
+    //{"PASV", handle_PASV_Command}
+    //{"QUIT", handle_QUIT_Command}
+    };
 
 pthread_mutex_t mutex;
 
@@ -201,7 +203,7 @@ void *handle_client(void *client_fdIn) {
 //TODO controllo isValid command e stampare comandi in input (riga 183) --> a noi manca SYST
     if (isValidCommand(cmd) != -1) {                //fa controllo nell'array di comandi
       //printf("(passato valid command %s %ld)\n", cmd, strlen(cmd));
-      for (int i = 0; i < 12; ++i) {
+      for (int i = 0; i < NUMBER_OF_COMMANDS; ++i) {
         if (strcasecmp(cmd, mComands[i].name) == 0) {     //cerca se il comando inviato dall'utente corrisponde a uno presente
           printf("%s", buffer);
           mComands[i].commandFunc(client_fd, buffer, &state);   //commandFunc è elemento della struct definito come puntatore a funzione di tipo Int che accetta 3 parametri--> con questa sintassi invoco quella funzione di gestione

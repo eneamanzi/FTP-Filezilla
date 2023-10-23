@@ -375,3 +375,14 @@ int handle_TYPE_Command(int client_socket, char *bufferIn, Session *state) {
     return -1;
   }
 }
+
+int handle_QUIT_Command(int client_socket, char *bufferIn, Session *state){
+  snprintf(bufferIn, BUFFER_SIZE, "221 Service closing control connection. Logged out if appropriate.\r\n");
+  send(client_socket, bufferIn, strlen(bufferIn), 0);
+  close(client_socket);
+  exit(0);
+  // write_state(state);
+  // close(state->connection);
+  // exit(0);
+  // return 0;
+}
