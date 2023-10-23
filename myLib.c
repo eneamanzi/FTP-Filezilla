@@ -4,19 +4,18 @@ const char* mCmd[NUMBER_OF_COMMANDS] =
 {
     "USER",
     "PASS",
-    ///"PASV",
+    "PORT",
+    "LIST",
     "PWD",
     "CWD",
-    "LIST",
-    "RETR",
     "DELE",
-    "PORT",
+    "RETR",
+    "STOR",
     "MKD",
     "RMD",
-    "PORT",
-    "STOR",
     "TYPE",
-    "QUIT"
+    //"PASV",
+    //"QUIT"
 };
 
 
