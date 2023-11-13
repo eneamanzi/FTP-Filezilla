@@ -16,7 +16,6 @@ const char* mCmd[NUMBER_OF_COMMANDS] =
     "TYPE",
     "QUIT",
     "PASV",
-    
 };
 
 
