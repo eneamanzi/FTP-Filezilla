@@ -37,6 +37,7 @@ void removeSpaces(char *str) {
   *i = '\0';
 }
 
+//TODO autenticazione comandi
 int is_logged_in(Session *state){
   if(strcmp(state->username, USR) && strcmp(state->password, PWD)){
     return 0;
@@ -54,7 +55,6 @@ int handle_USER_Command(int client_socket, char *bufferIn, Session *state) {
   strncpy(state->username, bufferIn + 5, strlen(bufferIn + 4));
   state->username[strlen(state->username)] = '\0';
   removeSpaces(state->username);
-  //TODO controllo username
   if (strcmp(state->username, USR)) {
     snprintf(response, strlen("530 Not logged in. \r\n")+1, "530 Not logged in. \r\n");
     send(client_socket, response, strlen(response), 0);
@@ -72,7 +72,6 @@ int handle_PASS_Command(int client_socket, char *bufferIn, Session *state) {
   strncpy(state->password, bufferIn + 4, strlen(bufferIn + 4));
   removeSpaces(state->password);
 
-  //TODO client authentication
   if(strcmp(state->password, PWD))
     snprintf(bufferIn, BUFFER_SIZE, "530 Not logged in.\r\n");
   else
