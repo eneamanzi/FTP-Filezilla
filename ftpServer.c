@@ -142,15 +142,21 @@ void *handle_client(void *client_fdIn) {
   char buffer[BUFFER_SIZE];
   memset(buffer, 0, sizeof(buffer));
   int read_bytes;
-  char mCwd[BUFFER_SIZE];
-  getcwd(mCwd, sizeof(mCwd)); //funzione C per directory corrente
+  Session state;
+
+  char *cwd = getenv("HOME");   //prendo la HOME dell'utente che esegue il server
+  //getcwd(mCwd, sizeof(mCwd)); //funzione C per directory corrente
+
+  memset(&logs,0,sizeof(logs));
+  memset(&state, 0, sizeof(Session));
+
+  strncpy(state.current_working_dir, cwd, strlen(cwd)+1);
+  chdir(cwd);       //cambio la CW alla home
 
   // Send welcome message
   snprintf(buffer, BUFFER_SIZE, "220 Welcome to the simple FTP server.\r\n");
   send(client_fd, buffer, strlen(buffer), 0);
-  memset(&logs,0,sizeof(logs));
-  Session state;
-  memset(&state, 0, sizeof(Session));
+  
   while ((read_bytes = recv(client_fd, buffer, BUFFER_SIZE, 0)) > 0) {
     // Ensure the buffer is null-terminated
     //printf("%d", read_bytes);
