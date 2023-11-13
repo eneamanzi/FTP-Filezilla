@@ -8,7 +8,6 @@ int isValidCommand(char *commandIn) {
   return -1;
 }
 
-
 void file_mode_string(mode_t mode, char *str) {
   static const char *rwx[] = {"---", "--x", "-w-", "-wx", "r--", "r-x", "rw-", "rwx"};
 
@@ -25,7 +24,6 @@ void file_mode_string(mode_t mode, char *str) {
   str[10] = '\0';
 }
 
-
 void removeSpaces(char *str) {
   char *i = str;
   char *j = str;
@@ -39,6 +37,13 @@ void removeSpaces(char *str) {
   *i = '\0';
 }
 
+int is_logged_in(Session *state){
+  if(strcmp(state->username, USR) && strcmp(state->password, PWD)){
+    return 0;
+  }
+  return 0;
+}
+
 
 //DA QUI INIZIANO LE IMPLEMENTAZIONI DELLE SINGOLE FUNZIONI //
 
@@ -50,8 +55,8 @@ int handle_USER_Command(int client_socket, char *bufferIn, Session *state) {
   state->username[strlen(state->username)] = '\0';
   removeSpaces(state->username);
   //TODO controllo username
-  if (0) {
-    snprintf(response, strlen("530 Not logged in. \r\n"), "530 Not logged in. \r\n");
+  if (strcmp(state->username, USR)) {
+    snprintf(response, strlen("530 Not logged in. \r\n")+1, "530 Not logged in. \r\n");
     send(client_socket, response, strlen(response), 0);
     return -1;
   }
@@ -68,10 +73,10 @@ int handle_PASS_Command(int client_socket, char *bufferIn, Session *state) {
   removeSpaces(state->password);
 
   //TODO client authentication
-  if (1)
-    snprintf(bufferIn, BUFFER_SIZE, "230 User logged in, proceed.\r\n");
-  else
+  if(strcmp(state->password, PWD))
     snprintf(bufferIn, BUFFER_SIZE, "530 Not logged in.\r\n");
+  else
+    snprintf(bufferIn, BUFFER_SIZE, "230 User logged in, proceed.\r\n");
   send(client_socket, bufferIn, strlen(bufferIn), 0);
   return 0;
 }
@@ -146,15 +151,13 @@ int handle_PASV_Command(int client_socket, char *bufferIn, Session *state) {
   struct sockaddr_in addr;
   getsockname(client_socket, (struct sockaddr *)&addr, &addr_size);   //salvo indirizzo formattato dentro addr
   
-  //TODO fix IP
-  //char* host = inet_ntoa(addr.sin_addr);
-  char* host = "192.168.178.128";
+  char* host = inet_ntoa(addr.sin_addr);
   sscanf(host,"%d.%d.%d.%d",&ip[0],&ip[1],&ip[2],&ip[3]);
  
   //filla il messaggio definito in response e lo mette dentro buff
   sprintf(buff,response,ip[0],ip[1],ip[2],ip[3],portPart[0],portPart[1]);
   
-  printf("\tPort:%d = %d * 256 + %d\n", port, portPart[0], portPart[1]);
+  //printf("\tPort:%d = %d * 256 + %d\n", port, portPart[0], portPart[1]);
   printf("\t%s", buff);
 
   send(client_socket, buff, strlen(buff), 0);
@@ -206,7 +209,8 @@ int handle_LIST_Command(int client_socket, char *bufferIn, Session *state) {
   struct dirent *entry;
   char entry_buffer[BUFFER_SIZE];
   dir = opendir(state->current_working_dir);
-  printf("\tdir: %s\n", state->current_working_dir);
+  //printf("\tdir: %s\n", state->current_working_dir);
+
   //errore
   if (dir == NULL) {
     perror("opendir");
@@ -412,8 +416,6 @@ int handle_TYPE_Command(int client_socket, char *bufferIn, Session *state) {
   char type;
   
   sscanf(bufferIn, "TYPE %c", &type);
-  //TODO
-  //if (type == 'I') {
   if(type == 'I'){
     snprintf(bufferIn, BUFFER_SIZE, "200 Type set to I.\r\n");
     send(client_socket, bufferIn, strlen(bufferIn), 0);

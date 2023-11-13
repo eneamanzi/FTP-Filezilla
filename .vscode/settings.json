@@ -22,6 +22,7 @@
         "string.h": "c",
         "dirent.h": "c",
         "mylib.h": "c",
-        "stat.h": "c"
+        "stat.h": "c",
+        "grp.h": "c"
     }
 }

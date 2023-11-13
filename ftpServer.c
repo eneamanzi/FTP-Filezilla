@@ -87,12 +87,13 @@ int main(int argc, char *argv[]) {
   pthread_cond_init(&cond_full,NULL);
   pthread_create(&consumer,NULL,log_Message,NULL);
 
+  printf(YELLOW);
+  printf("Waiting for incoming connection\n");
+  printf(RESET);
+
   while (1) {
     // Accept a connection
-    printf(YELLOW);
-    printf("Waiting for incoming connection\n");
-    printf(RESET);
-    if ((client_fd = accept(server_fd, (struct sockaddr *)&client_addr, &addr_len)) < 0) {
+        if ((client_fd = accept(server_fd, (struct sockaddr *)&client_addr, &addr_len)) < 0) {
       perror("accept");
       exit(EXIT_FAILURE);
     }
@@ -101,38 +102,12 @@ int main(int argc, char *argv[]) {
     printf(GREEN);
     printf("Connection accepted from %s:%d\n", inet_ntoa(client_addr.sin_addr), ntohs(client_addr.sin_port));
     printf(RESET);
-    printf("FD: %ld\n", client_fd);
     pthread_t clientThread;
     pthread_create(&clientThread, NULL, handle_client, (void *)client_fd);
   }
 
   close(server_fd);
   return 0;
-}
-
-
-//Funzione Thread di logging --> ogni 10 comandi (gestito da mutex)
-void *log_Message()
-{
-  FILE * fp = fopen("logs.txt","a");
-  if(fp == NULL)printf("Problem Opening File\n");
-  while(1)
-  {
-      pthread_mutex_lock(&mutex);
-      while(countCommands < 10)
-      {
-          //printf("Still not \n");
-          pthread_cond_wait(&cond_full,&mutex);
-      }
-      for(int i =0; i < countCommands;++i)
-      {
-        fprintf(fp, "[%s] : %s\n",logs.state->username ,logs.command[i]);
-        fflush(fp);
-      }
-      countCommands = 0;
-      pthread_mutex_unlock(&mutex);
-      pthread_cond_signal(&cond_empty);
-  }
 }
 
 //Funzione di gestione per ogni thread generato -_> si occupa di invocare le funzioni per i rispettivi comandi
@@ -163,10 +138,7 @@ void *handle_client(void *client_fdIn) {
     buffer[read_bytes] = '\0';
     char cmd[5];
     cmd[4]='\0';
-
-    //TODO modificare i caratteri sono più di 4
     sscanf(buffer, "%4s", cmd);
-    //printf("(%s)", cmd);
     
     pthread_mutex_lock(&mutex);
     while(countCommands >= 10)
@@ -179,19 +151,24 @@ void *handle_client(void *client_fdIn) {
     countCommands++;
     pthread_mutex_unlock(&mutex);
     if(countCommands == 10)pthread_cond_signal(&cond_full);
-    
-//TODO controllo isValid command e stampare comandi in input (riga 183) --> a noi manca SYST
+
+   
     if (isValidCommand(cmd) != -1) {                //fa controllo nell'array di comandi
       //printf("(passato valid command %s %ld)\n", cmd, strlen(cmd));
       for (int i = 0; i < NUMBER_OF_COMMANDS; ++i) {
         if (strcasecmp(cmd, mComands[i].name) == 0) {     //cerca se il comando inviato dall'utente corrisponde a uno presente
+
+          printf(BOLDRED);
           printf("%s", buffer);
+          printf(RESET);
           mComands[i].commandFunc(client_fd, buffer, &state);   //commandFunc è elemento della struct definito come puntatore a funzione di tipo Int che accetta 3 parametri--> con questa sintassi invoco quella funzione di gestione
           break;
         }
       }
     } else {
-      printf("(fallito valid command %s %ld)\n", cmd, strlen(cmd));
+      printf(WHITE);
+      printf("\t(fallito valid command: %s %ld)\n", cmd, strlen(cmd));
+      printf(RESET);
       snprintf(buffer, BUFFER_SIZE, "500 Unknown command.\r\n");
       send(client_fd, buffer, strlen(buffer), 0);
     }
@@ -200,3 +177,25 @@ void *handle_client(void *client_fdIn) {
   return 0;
 }
 
+//Funzione Thread di logging --> ogni 10 comandi (gestito da mutex)
+void *log_Message(){
+  FILE * fp = fopen("logs.txt","a");
+  if(fp == NULL)printf("Problem Opening File\n");
+  while(1)
+  {
+      pthread_mutex_lock(&mutex);
+      while(countCommands < 10)
+      {
+          //printf("Still not \n");
+          pthread_cond_wait(&cond_full,&mutex);
+      }
+      for(int i =0; i < countCommands;++i)
+      {
+        fprintf(fp, "[%s] : %s\n",logs.state->username ,logs.command[i]);
+        fflush(fp);
+      }
+      countCommands = 0;
+      pthread_mutex_unlock(&mutex);
+      pthread_cond_signal(&cond_empty);
+  }
+}
