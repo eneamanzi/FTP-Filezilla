@@ -22,7 +22,8 @@ typedef struct
 {
     char  username[256];
     char  password[256];
-    int data_socket;
+    int data_socket;            //socket scambio dati
+    int server_data;            //FD server in attesa di accept
     char current_working_dir[2048];
 }Session;
 
