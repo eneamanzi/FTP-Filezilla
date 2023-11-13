@@ -86,7 +86,7 @@ int main(int argc, char *argv[]) {
   pthread_cond_init(&cond_empty,NULL);
   pthread_cond_init(&cond_full,NULL);
   pthread_create(&consumer,NULL,log_Message,NULL);
-  
+
   while (1) {
     // Accept a connection
     printf(YELLOW);
@@ -96,10 +96,12 @@ int main(int argc, char *argv[]) {
       perror("accept");
       exit(EXIT_FAILURE);
     }
+   
     printf(RESET);
     printf(GREEN);
     printf("Connection accepted from %s:%d\n", inet_ntoa(client_addr.sin_addr), ntohs(client_addr.sin_port));
     printf(RESET);
+    printf("FD: %ld\n", client_fd);
     pthread_t clientThread;
     pthread_create(&clientThread, NULL, handle_client, (void *)client_fd);
   }
@@ -107,7 +109,6 @@ int main(int argc, char *argv[]) {
   close(server_fd);
   return 0;
 }
-
 
 
 //Funzione Thread di logging --> ogni 10 comandi (gestito da mutex)
@@ -189,6 +190,7 @@ void *handle_client(void *client_fdIn) {
       send(client_fd, buffer, strlen(buffer), 0);
     }
   }
+  printf("uscito client [%d]\n",client_fd);
   return 0;
 }
 

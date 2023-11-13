@@ -134,15 +134,21 @@ int handle_PASV_Command(int client_socket, char *bufferIn, Session *state) {
 
   /* Close previous passive socket */
   close(state->data_socket);
+  close(state->server_data);
 
   /* Start listening here, but don't accept the connection */
+  
   dataServer = create_socket_pasv(port);
+  state->server_data = dataServer;
 
   //prendo IP dalla socket client
   socklen_t addr_size = sizeof(struct sockaddr_in);
   struct sockaddr_in addr;
   getsockname(client_socket, (struct sockaddr *)&addr, &addr_size);   //salvo indirizzo formattato dentro addr
-  char* host = inet_ntoa(addr.sin_addr);
+  
+  //TODO fix IP
+  //char* host = inet_ntoa(addr.sin_addr);
+  char* host = "192.168.178.128";
   sscanf(host,"%d.%d.%d.%d",&ip[0],&ip[1],&ip[2],&ip[3]);
  
   //filla il messaggio definito in response e lo mette dentro buff
@@ -161,7 +167,7 @@ int handle_PASV_Command(int client_socket, char *bufferIn, Session *state) {
 }
 
 int create_socket_pasv(int port){
-  int sock, sockPattona;
+  int sock;
   int reuse = 1;
 
   /*if((sockPattona = socket(AF_INET, SOCK_STREAM, 0)) < 0){
@@ -185,6 +191,7 @@ int create_socket_pasv(int port){
 
   /* Bind socket to server address */
   if(bind(sock,(struct sockaddr*) &address, sizeof(address)) < 0){
+    perror("exit:");
     fprintf(stderr, "Cannot bind socket to address\n");
     exit(EXIT_FAILURE);
   }
@@ -405,14 +412,18 @@ int handle_TYPE_Command(int client_socket, char *bufferIn, Session *state) {
   char type;
   
   sscanf(bufferIn, "TYPE %c", &type);
-
   //TODO
   //if (type == 'I') {
-  if(1){
+  if(type == 'I'){
     snprintf(bufferIn, BUFFER_SIZE, "200 Type set to I.\r\n");
     send(client_socket, bufferIn, strlen(bufferIn), 0);
     return 0;
-  } else {
+  } else if(type == 'A'){
+    snprintf(bufferIn, BUFFER_SIZE, "200 Type set to A.\r\n");
+    send(client_socket, bufferIn, strlen(bufferIn), 0);
+    return 0;
+  }
+  else {
     snprintf(bufferIn, BUFFER_SIZE, "504 Command not implemented for that parameter.\r\n");
     send(client_socket, bufferIn, strlen(bufferIn), 0);
     return -1;
