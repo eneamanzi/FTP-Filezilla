@@ -63,7 +63,7 @@ int main(int argc, char *argv[]) {
   }
 
   server_addr.sin_family = AF_INET;
-  server_addr.sin_addr.s_addr = INADDR_ANY;
+  server_addr.sin_addr.s_addr = INADDR_ANY; //This is an IP address that is used when we don't want to bind a socket to any specific IP. Basically, while implementing communication, we need to bind our socket to an IP address. When we don't know the IP address of our machine, we can use the special IP address INADDR_ANY. It allows our server to receive packets that have been targeted by any of the interfaces.
   server_addr.sin_port = htons(port);
 
   /* Address can be reused instantly after program exits */
