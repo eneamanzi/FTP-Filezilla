@@ -32,7 +32,6 @@ int handle_RMD_Command(int client_socket, char *bufferIn, Session *state);
 int handle_TYPE_Command(int client_socket, char *bufferIn, Session *state);
 int handle_QUIT_Command(int client_socket, char *bufferIn, Session *state);
 int handle_PASV_Command(int client_socket, char *bufferIn, Session *state);
-int A(int client_socket, char *bufferIn, Session *state);
 
 
 int create_data_connection(unsigned char ip[4], int port);

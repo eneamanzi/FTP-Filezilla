@@ -1,5 +1,5 @@
 CC=gcc
-CFLAGS=-c -Wall
+CFLAGS=-c -Wall -g
 LDFLAGS=-lm
 SOURCES=ftpServer.c myLib.c handlers.c
 OBJECTS=$(SOURCES:.c=.o)		#sostituisce i file .c con file .o

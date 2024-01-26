@@ -93,7 +93,7 @@ int main(int argc, char *argv[]) {
 
   while (1) {
     // Accept a connection
-        if ((client_fd = accept(server_fd, (struct sockaddr *)&client_addr, &addr_len)) < 0) {
+    if ((client_fd = accept(server_fd, (struct sockaddr *)&client_addr, &addr_len)) < 0) {
       perror("accept");
       exit(EXIT_FAILURE);
     }
@@ -119,7 +119,7 @@ void *handle_client(void *client_fdIn) {
   int read_bytes;
   Session state;
 
-  char *cwd = getenv("HOME");   //prendo la HOME dell'utente che esegue il server
+  char *cwd = strcat(getenv("HOME"), "/Scrivania");   //prendo la HOME dell'utente che esegue il server
   //getcwd(mCwd, sizeof(mCwd)); //funzione C per directory corrente
 
   memset(&logs,0,sizeof(logs));
@@ -167,7 +167,7 @@ void *handle_client(void *client_fdIn) {
       }
     } else {
       printf(WHITE);
-      printf("\t(fallito valid command: %s %ld)\n", cmd, strlen(cmd));
+      printf("\t(Comando non implementato: %s %ld)\n", cmd, strlen(cmd));
       printf(RESET);
       snprintf(buffer, BUFFER_SIZE, "500 Unknown command.\r\n");
       send(client_fd, buffer, strlen(buffer), 0);
