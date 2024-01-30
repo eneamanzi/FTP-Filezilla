@@ -103,6 +103,8 @@ int main(int argc, char *argv[]) {
     printf("Connection accepted from %s:%d\n", inet_ntoa(client_addr.sin_addr), ntohs(client_addr.sin_port));
     printf(RESET);
     pthread_t clientThread;
+    //la cretae prende in ingresso la funzione da eseguire e, eventualmente, dei parametri passati come puntatore void (poichè "universale")
+    //passiamo un long
     pthread_create(&clientThread, NULL, handle_client, (void *)client_fd);
   }
 
@@ -133,7 +135,6 @@ void *handle_client(void *client_fdIn) {
   send(client_fd, buffer, strlen(buffer), 0);
   
   while ((read_bytes = recv(client_fd, buffer, BUFFER_SIZE, 0)) > 0) {
-    // Ensure the buffer is null-terminated
     //printf("%d", read_bytes);
     buffer[read_bytes] = '\0';
     char cmd[5];
@@ -141,8 +142,7 @@ void *handle_client(void *client_fdIn) {
     sscanf(buffer, "%4s", cmd);
     
     pthread_mutex_lock(&mutex);
-    while(countCommands >= 10)
-    {
+    while(countCommands >= 10){
         printf("Wait for new command\n");
         pthread_cond_wait(&cond_empty,&mutex);
     }
@@ -150,14 +150,13 @@ void *handle_client(void *client_fdIn) {
     logs.state = &state;
     countCommands++;
     pthread_mutex_unlock(&mutex);
+
     if(countCommands == 10)pthread_cond_signal(&cond_full);
 
    
     if (isValidCommand(cmd) != -1) {                //fa controllo nell'array di comandi
-      //printf("(passato valid command %s %ld)\n", cmd, strlen(cmd));
       for (int i = 0; i < NUMBER_OF_COMMANDS; ++i) {
         if (strcasecmp(cmd, mComands[i].name) == 0) {     //cerca se il comando inviato dall'utente corrisponde a uno presente
-
           printf(BOLDRED);
           printf("%s", buffer);
           printf(RESET);
@@ -184,13 +183,12 @@ void *log_Message(){
   while(1)
   {
       pthread_mutex_lock(&mutex);
-      while(countCommands < 10)
-      {
+      while(countCommands < 10){
           //printf("Still not \n");
           pthread_cond_wait(&cond_full,&mutex);
       }
-      for(int i =0; i < countCommands;++i)
-      {
+
+      for(int i =0; i < countCommands;++i){
         fprintf(fp, "[%s] : %s\n",logs.state->username ,logs.command[i]);
         fflush(fp);
       }

@@ -3,18 +3,6 @@
 #define NUMBER_OF_COMMANDS 14
 #define BUFFER_SIZE 2048
 
-typedef enum 
-{
-    PWD=0,
-    CWD,
-    LIST,
-    RETR,
-    DELE,
-    MKD,
-    RMD,
-    PORT,
-    QUIT
-}Commands;
 extern const char* mCmd[NUMBER_OF_COMMANDS];
 
 
@@ -22,8 +10,7 @@ typedef struct
 {
     char  username[256];
     char  password[256];
-    int data_socket;            //socket scambio dati
-    int server_data;            //FD server in attesa di accept
+    int data_socket;            //socket per scambio dati (retr/store/list)
     char current_working_dir[2048];
 }Session;
 
