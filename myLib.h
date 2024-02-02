@@ -11,6 +11,7 @@ typedef struct
     char  username[256];
     char  password[256];
     int data_socket;            //socket per scambio dati (retr/store/list)
+    int server_data;            //socket server creata dalla PASV per accettare connessioni
     char current_working_dir[2048];
 }Session;
 

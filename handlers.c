@@ -138,9 +138,12 @@ int handle_PASV_Command(int client_socket, char *bufferIn, Session *state) {
 
   /* Close previous passive socket */
   close(state->data_socket);
+  close(state->server_data);
+
 
   /* Start listening here, but don't accept the connection */
   dataServer = create_socket_pasv(port);
+  state->server_data = dataServer;
 
   //prendo IP dalla socket client
   socklen_t addr_size = sizeof(struct sockaddr_in);
