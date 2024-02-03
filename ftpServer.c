@@ -172,7 +172,8 @@ void *handle_client(void *client_fdIn) {
       send(client_fd, buffer, strlen(buffer), 0);
     }
   }
-  printf("uscito client [%d]\n",client_fd);
+  //printf("uscito client [%d]\n",client_fd);
+  close(client_fd);
   return 0;
 }
 
