@@ -6,15 +6,15 @@
 
 ## Panoramica
 
-Questo progetto implementa un semplice **FTP server** scritto in **C** realizzato come progetto per l'esame di *Reti di Calcolatori*. L'obiettivo è fornire un server compatibile con il client FileZilla che supporti le principali operazioni del protocollo FTP (login, trasferimento file in active/passive, gestione directory, ecc.). citeturn0view0
+Questo progetto implementa un semplice **FTP server** scritto in **C** realizzato come progetto per l'esame di *Reti di Calcolatori*. L'obiettivo è fornire un server compatibile con il client FileZilla che supporti le principali operazioni del protocollo FTP (login, trasferimento file in active/passive, gestione directory, ecc.).
 
-> Il repository contiene codice sorgente in C e un `Makefile` che facilita la compilazione del server; è incluso anche un PDF con la descrizione del progetto (`Progetto reti.pdf`). citeturn0view0
+> Il repository contiene codice sorgente in C e un `Makefile` che facilita la compilazione del server; è incluso anche un PDF con la descrizione del progetto (`Progetto reti.pdf`). 
 
 ---
 
 ## Funzionalità supportate
 
-Basandomi sui file presenti nel repository, il server supporta (almeno) i seguenti comandi FTP:
+Il server supporta (almeno) i seguenti comandi FTP:
 
 * `USER` — specifica l'username per il login
 * `PASS` — specifica la password per il login
@@ -31,7 +31,7 @@ Basandomi sui file presenti nel repository, il server supporta (almeno) i seguen
 * `TYPE` — imposta il tipo di trasferimento (A/I)
 * `QUIT` — termina la sessione
 
-Questa lista è ricavata dalla descrizione presente nel repository e dall'analisi dei nomi dei file sorgente. Per dettagli implementativi vedi i sorgenti `ftpServer.c`, `handlers.c`, `myLib.c` e gli header associati. citeturn0view0
+Per dettagli implementativi vedi i sorgenti `ftpServer.c`, `handlers.c`, `myLib.c` e gli header associati.
 
 ---
 
@@ -65,7 +65,7 @@ Dovrebbe generare l'eseguibile (tipicamente `ftpServer` o nome analogo) se il Ma
 make clean && make
 ```
 
-(Controlla il contenuto del `Makefile` per i target e le variabili di build). citeturn0view0
+(Controlla il contenuto del `Makefile` per i target e le variabili di build).
 
 ---
 
@@ -80,14 +80,14 @@ Lo script principale è `ftpServer.c` — lancia l'eseguibile risultante come:
 * Avvia il server in ascolto sulla porta specificata.
 * Connetti FileZilla (o un altro client FTP) usando indirizzo IP della macchina e la porta scelta.
 
-> Nota: i dettagli esatti della riga di comando (argomenti, opzioni) sono documentati eventualmente nei sorgenti o nel PDF `Progetto reti.pdf`. Controlla quei file per parametri aggiuntivi. citeturn0view0
+> Nota: i dettagli esatti della riga di comando (argomenti, opzioni) sono documentati eventualmente nei sorgenti o nel PDF `Progetto reti.pdf`.
 
 ---
 
 ## Struttura del repository (file principali)
 
 * `.vscode/` — configurazioni editor (se presenti)
-* `Makefile` — istruzioni di build. citeturn0view0
+* `Makefile` — istruzioni di build. 
 * `Progetto reti.pdf` — documento del progetto e specifiche.
 * `README.md` — (questo file).
 * `colors.h` — definizioni di colore per output testuale/console.
@@ -95,18 +95,17 @@ Lo script principale è `ftpServer.c` — lancia l'eseguibile risultante come:
 * `handlers.c`, `handlers.h` — implementazione e prototipi delle funzioni che gestiscono i comandi FTP.
 * `myLib.c`, `myLib.h` — libreria di utilità interna (funzioni ausiliarie, file I/O, parsing ecc.).
 
-(Elenco ricavato da albero del repository). citeturn0view0
 
 ---
 
 ## Dettagli tecnici e note implementative
 
-* Il server sembra implementare sia modalità attiva (`PORT`) sia passiva (`PASV`) per i trasferimenti dati.
+* Il server implementa sia modalità attiva (`PORT`) sia passiva (`PASV`) per i trasferimenti dati.
 * La gestione dei comandi è modularizzata: `handlers.*` contiene la logica per `USER`, `PASS`, `LIST`, `RETR`, `STOR`, ecc.
 * `myLib.*` fornisce funzioni helper (probabilmente per parsing, logging, manipolazione stringhe, gestione file).
 * Non è chiaro se il server includa meccanismi di autenticazione persistente (file di utenti) oppure usa credenziali hard-coded o anonime — controllare `handlers.c` per i dettagli sul flusso di login.
 
-Per sicurezza: prima di esporre il server in una rete pubblica, rivedere il codice per validazione dei percorsi, controllo degli accessi e prevention di directory traversal. Il repository è pensato per scopi didattici. citeturn0view0
+Per sicurezza: prima di esporre il server in una rete pubblica, rivedere il codice per validazione dei percorsi, controllo degli accessi e prevention di directory traversal. Il repository è pensato per scopi didattici.
 
 ---
 
@@ -152,16 +151,6 @@ Contributi e miglioramenti sono i benvenuti. Se vuoi aprire una PR, segui questi
 
 ## Autore
 
-Repository: `eneamanzi` (vedi pagina GitHub). citeturn0view0
+Repository: `eneamanzi` (vedi pagina GitHub). 
 
 ---
-
-### Avviso finale
-
-Questa README è generata automaticamente analizzando la struttura del repository e i nomi dei file. Per completarla al 100% servirebbe una lettura riga-per-riga dei sorgenti (`ftpServer.c`, `handlers.c`, `myLib.c`) e del PDF `Progetto reti.pdf` per estrarre esempi d'uso, formati esatti di configurazione, e possibili argomenti di avvio. Se vuoi, posso:
-
-* estrarre automaticamente dal sorgente le opzioni di linea di comando e includerle nel README;
-* generare esempi di sessione FileZilla basati sul codice;
-* creare una LICENSE (es. MIT) se vuoi pubblicare il progetto con licenza.
-
-Dimmi quale di queste preferisci e procedo ad aggiornare il README.
