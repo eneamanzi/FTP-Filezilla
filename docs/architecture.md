@@ -1,6 +1,8 @@
 ---
 title: Architecture
 layout: default
+nav_order: 3
+
 ---
 
 # Architecture and Main Files

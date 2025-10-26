@@ -1,16 +1,13 @@
 ---
-title: FTP-Filezilla Documentation
 layout: home
+title: Home
+nav_order: 1
 ---
 
-# Welcome to FTP-Filezilla
+# Server FTP-Filezilla
 
-This is the official documentation for the **FTP-Filezilla** project.
+Benvenuto nella documentazione del progetto **FTP-Filezilla Server**.
 
-## Overview
+Questo progetto implementa un semplice server FTP scritto in C, sviluppato come progetto per il corso di Reti di Calcolatori. È progettato per essere compatibile con il client FTP [FileZilla](https://filezilla-project.org/).
 
-FTP-Filezilla is a simple **FTP server** written in **C**, fully compatible with FileZilla.  
-Developed for the *Computer Networks* course project.
-
-
-
+In questo sito troverai informazioni su come compilare, eseguire e testare il server.
