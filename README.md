@@ -15,16 +15,17 @@ The goal is to provide a server fully compatible with the **FileZilla client**, 
 
 ## Table of Contents
 
-- [Description](##-description)
-- [Supported Features](##-supported-features)
-- [Requirements](##-requirements)
-- [Compilation](##-compilation)
-- [Execution](##-execution)
-- [Testing with FileZilla](##-testing-with-filezilla)
-- [Architecture and Main Files](##-architecture-and-main-files)
-- [Technical Details](##-technical-details)
-- [References](##-references)
-- [Author](##-author)
+- [Description](#description)
+- [Supported Features](#supported-features)
+- [Requirements](#requirements)
+- [Compilation](#compilation)
+- [Execution](#execution)
+- [Testing with FileZilla](#testing-with-filezilla)
+- [Architecture and Main Files](#architecture-and-main-files)
+- [Technical Details](#technical-details)
+- [References](#references)
+- [Authors](#authors)
+
 
 ---
 
@@ -153,7 +154,7 @@ Example:
 
 ---
 
-## Autori
+## Author
 
 [**Enea Manzi**](https://github.com/eneamanzi)
 
