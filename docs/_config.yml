@@ -1,0 +1,11 @@
+title: FTP-Filezilla
+description: This project implements a simple FTP server written in C, developed as part of the Computer Networks course project.
+theme: just-the-docs
+
+url: https://eneamanzi.github.io/FTP-Filezilla/
+repository: https://github.com/eneamanzi/FTP-Filezilla
+
+
+#logo: "/assets/images/just-the-docs.png"
+
+
