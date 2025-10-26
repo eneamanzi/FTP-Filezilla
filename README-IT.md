@@ -61,7 +61,7 @@ Il server implementa i principali **comandi FTP**:
 
 ---
 
-## 🛠️ Compilazione
+## Compilazione
 
 1. Clona il repository:
    ```bash
@@ -138,11 +138,9 @@ Esempio:
 
 - Supporta **modalità attiva (PORT)** e **passiva (PASV)**  
 - Parsing comandi FTP tramite socket di controllo  
-- Gestione potenzialmente sequenziale o multi-processo (verificare nel codice)  
-- Autenticazione base (`USER` / `PASS`) — probabilmente con credenziali fisse o anonime  
+- Autenticazione base (`USER` / `PASS`)
 - Risposte standard FTP: `2xx`, `3xx`, `4xx`, `5xx`  
 - `handlers.*` gestisce la logica dei comandi, `myLib.*` fornisce funzioni helper
-
 
 Questo repository è destinato a scopi **didattici**, non alla produzione.
 
