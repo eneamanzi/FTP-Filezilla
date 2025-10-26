@@ -154,7 +154,7 @@ Example:
 
 ---
 
-## Author
+## Authors
 
 [**Enea Manzi**](https://github.com/eneamanzi)
 
